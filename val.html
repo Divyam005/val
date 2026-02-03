@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sara, Will You Be My Valentine? 💘</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+      font-family: "Comic Sans MS", cursive, sans-serif;
+    }
+
+    .card {
+      background: white;
+      padding: 30px 40px 70px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+      width: 340px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      color: #ff4d6d;
+    }
+
+    .buttons {
+      position: relative;
+      height: 160px;
+      overflow: hidden;
+    }
+
+    button {
+      padding: 12px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    #yesBtn {
+      background: #ff4d6d;
+      color: white;
+    }
+
+    #noBtn {
+      position: absolute;
+      background: #ccc;
+      color: #333;
+      left: 180px;
+      top: 80px;
+      pointer-events: none; /* evil mode */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Sara, will you be my Valentine? 💕</h1>
+    <div class="buttons" id="arena">
+      <button id="yesBtn" onclick="yesClicked()">Yes 💖</button>
+      <button id="noBtn">No 🙈</button>
+    </div>
+  </div>
+
+  <script>
+    const noBtn = document.getElementById("noBtn");
+    const arena = document.getElementById("arena");
+
+    let pos = { x: 180, y: 80 };
+    let vel = { x: 0, y: 0 };
+
+    const SPEED = 0.45;
+    const MAX_SPEED = 16;
+    const DAMPING = 0.88;
+    const TRIGGER_DIST = 140;
+
+    const CORNER_MARGIN = 12;
+    const TELEPORT_COOLDOWN = 500;
+    let lastTeleport = 0;
+
+    arena.addEventListener("mousemove", (e) => {
+      const rect = arena.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      const bx = pos.x + noBtn.offsetWidth / 2;
+      const by = pos.y + noBtn.offsetHeight / 2;
+
+      const dx = bx - mx;
+      const dy = by - my;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < TRIGGER_DIST) {
+        const panic = (TRIGGER_DIST - dist) / TRIGGER_DIST;
+        vel.x += (dx / dist) * SPEED * panic * 25;
+        vel.y += (dy / dist) * SPEED * panic * 25;
+      }
+    });
+
+    function teleportAway() {
+      const maxX = arena.clientWidth - noBtn.offsetWidth;
+      const maxY = arena.clientHeight - noBtn.offsetHeight;
+
+      pos.x = Math.random() * maxX;
+      pos.y = Math.random() * maxY;
+
+      vel.x = 0;
+      vel.y = 0;
+
+      lastTeleport = Date.now();
+    }
+
+    function animate() {
+      vel.x *= DAMPING;
+      vel.y *= DAMPING;
+
+      vel.x = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, vel.x));
+      vel.y = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, vel.y));
+
+      pos.x += vel.x;
+      pos.y += vel.y;
+
+      const maxX = arena.clientWidth - noBtn.offsetWidth;
+      const maxY = arena.clientHeight - noBtn.offsetHeight;
+
+      const cornered =
+        pos.x < CORNER_MARGIN ||
+        pos.y < CORNER_MARGIN ||
+        pos.x > maxX - CORNER_MARGIN ||
+        pos.y > maxY - CORNER_MARGIN;
+
+      if (cornered && Date.now() - lastTeleport > TELEPORT_COOLDOWN) {
+        teleportAway();
+      } else {
+        pos.x = Math.max(0, Math.min(maxX, pos.x));
+        pos.y = Math.max(0, Math.min(maxY, pos.y));
+      }
+
+      noBtn.style.left = pos.x + "px";
+      noBtn.style.top = pos.y + "px";
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    function yesClicked() {
+      document.body.innerHTML = `
+        <div style="
+          height:100vh;
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          background:linear-gradient(135deg,#ff758c,#ff7eb3);
+          font-family:Comic Sans MS;
+          color:white;
+          text-align:center;
+        ">
+          <h1>YAYYY 💘<br>You’re officially my Valentine 😍</h1>
+        </div>
+      `;
+    }
+  </script>
+
+</body>
+</html>
